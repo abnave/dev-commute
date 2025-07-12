@@ -1,5 +1,6 @@
 package com.example.kafka.controller;
 
+import com.example.kafka.model.MessageRequest;
 import com.example.kafka.service.KafkaProducerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,8 +15,8 @@ public class MessageController {
     }
 
     @PostMapping
-    public ResponseEntity<String> sendMessage(@RequestParam String message) {
-        producerService.sendMessage(message);
+    public ResponseEntity<String> sendMessage(@RequestBody MessageRequest messageRequest) {
+        producerService.sendMessage(messageRequest);
         return ResponseEntity.ok("Message sent to Kafka topic.");
     }
 }
