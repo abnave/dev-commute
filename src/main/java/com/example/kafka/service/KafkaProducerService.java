@@ -1,6 +1,7 @@
 package com.example.kafka.service;
 
 import com.example.kafka.model.MessageRequest;
+import com.example.kafka.model.OrderRequest;
 import com.google.gson.Gson;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
@@ -25,7 +26,7 @@ public class KafkaProducerService {
     public KafkaProducerService(
             KafkaTemplate<String, String> kafkaTemplate,
             @Value("${kafka.topic.demo}") String topic,
-            @Value("${kafka.partitions}") int partitions,
+            @Value("${kafka.topic.partitions}") int partitions,
             @Value("${kafka.headers.messageType}") String headerMessageType,
             @Value("${kafka.headers.user}") String headerUser) {
         this.kafkaTemplate = kafkaTemplate;
@@ -101,4 +102,18 @@ public class KafkaProducerService {
             });
         }
     }
+
+    // --- New Order Producer Method ---
+    @Value("${kafka.topic.orders}")
+    private String ordersTopic;
+
+    public void sendOrder(OrderRequest orderRequest) {
+    String key = orderRequest.getOrderId();
+    String value = gson.toJson(orderRequest);
+    kafkaTemplate.executeInTransaction(kt -> {
+        kt.send(ordersTopic, key, value);
+        logger.info("Order sent: {}", value);
+        return null;
+    });
+}
 }

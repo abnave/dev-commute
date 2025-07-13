@@ -12,10 +12,13 @@ spring:
 
 kafka:
   topic:
-    demo: demo-topic
-  partitions: 3
+    orders: orders
+    partitions: 3
   headers:
     messageType: messageType
     user: user
 
-# You can add more constants or environment-specific overrides as needed
+logging:
+  level:
+    root: WARN          
+    com.example.kafka: INFO
