@@ -18,4 +18,10 @@ public class KafkaConfig {
     public NewTopic ordersTopic() {
         return new NewTopic(ordersTopic, partitions, (short) 1);
     }
+
+    @Bean
+    public NewTopic ridesTopic(@Value("${kafka.topic.rides}") String ridesTopic,
+                               @Value("${kafka.topic.partitions}") int partitions) {
+        return new NewTopic(ridesTopic, partitions, (short) 1);
+    }
 }

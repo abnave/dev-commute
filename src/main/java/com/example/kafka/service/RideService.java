@@ -15,10 +15,12 @@ import java.util.Optional;
 @Service
 public class RideService {
     private final RideRepository rideRepository;
+    private final com.example.kafka.service.KafkaProducerService kafkaProducerService;
 
     @Autowired
-    public RideService(RideRepository rideRepository) {
+    public RideService(RideRepository rideRepository, com.example.kafka.service.KafkaProducerService kafkaProducerService) {
         this.rideRepository = rideRepository;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     /**
@@ -44,7 +46,21 @@ public class RideService {
      * @return the created ride
      */
     public Ride createRide(Ride ride) {
-        return rideRepository.save(ride);
+        Ride savedRide = rideRepository.save(ride);
+        // Publish ride event to Kafka
+        com.example.kafka.model.RideEvent event = new com.example.kafka.model.RideEvent(
+                savedRide.getId(),
+                savedRide.getOwner() != null ? savedRide.getOwner().getUsername() : null,
+                savedRide.getVehicleType(),
+                savedRide.getAvailableSeats(),
+                savedRide.getSource(),
+                savedRide.getDestination(),
+                savedRide.getStartTime(),
+                savedRide.getPrice(),
+                savedRide.getStatus()
+        );
+        kafkaProducerService.sendRideEvent(event);
+        return savedRide;
     }
 
     /**

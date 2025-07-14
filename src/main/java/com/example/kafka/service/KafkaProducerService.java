@@ -3,6 +3,13 @@ package com.example.kafka.service;
 import com.example.kafka.model.MessageRequest;
 import com.example.kafka.model.OrderRequest;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+import java.time.LocalDateTime;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +28,10 @@ public class KafkaProducerService {
     private final String headerMessageType;
     private final String headerUser;
 
-    private final Gson gson = new Gson();
+    private final Gson gson = new GsonBuilder()
+        .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
+        .registerTypeAdapter(LocalDateTime.class, (JsonDeserializer<LocalDateTime>) (json, typeOfT, context) -> LocalDateTime.parse(json.getAsString()))
+        .create();
 
     public KafkaProducerService(
             KafkaTemplate<String, String> kafkaTemplate,
@@ -106,6 +116,25 @@ public class KafkaProducerService {
     // --- New Order Producer Method ---
     @Value("${kafka.topic.orders}")
     private String ordersTopic;
+
+    @Value("${kafka.topic.rides}")
+    private String ridesTopic;
+
+    /**
+     * Publish a ride event to the rides Kafka topic.
+     * @param rideEvent the event to publish
+     */
+    public void sendRideEvent(com.example.kafka.model.RideEvent rideEvent) {
+        String key = rideEvent.getId() != null ? rideEvent.getId().toString() : null;
+        String value = gson.toJson(rideEvent);
+        kafkaTemplate.send(ridesTopic, key, value).whenComplete((result, ex) -> {
+            if (ex == null) {
+                logger.info("Ride event sent: {} (offset={})", value, result.getRecordMetadata().offset());
+            } else {
+                logger.error("Unable to send ride event [{}] due to: {}", value, ex.getMessage());
+            }
+        });
+    }
 
     public void sendOrder(OrderRequest orderRequest) {
     String key = orderRequest.getOrderId();
