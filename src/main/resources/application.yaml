@@ -9,11 +9,24 @@ spring:
     consumer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  datasource:
+    url: jdbc:postgresql://ride_sharing_postgres:5432/ride_sharing
+    username: ride_user
+    password: ride_pass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  # Keep kafka config as-is
 
 kafka:
   topic:
     orders: orders
-    partitions: 3
+    partitions: 10
   headers:
     messageType: messageType
     user: user

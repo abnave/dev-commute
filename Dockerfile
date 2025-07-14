@@ -5,7 +5,7 @@ FROM eclipse-temurin:23-jre
 WORKDIR /app
 
 # Copy the built jar file
-COPY target/spring-kafka-demo-0.0.1-SNAPSHOT.jar app.jar
+COPY target/dev-commute-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose the default Spring Boot port
 EXPOSE 8080
