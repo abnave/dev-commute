@@ -8,6 +8,9 @@ on:
       - dev
   workflow_dispatch:
 
+permission:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
